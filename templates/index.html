@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Prédiction d'Image</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0 auto;
+            color: green;
+        }
+        .container {
+            width: 60%;
+            margin: 0 auto;
+            padding-top: 50px;
+        }
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .btn {
+            border: 2px solid green;
+            color: green;
+            background-color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prédiction d'Image</h1>
+        <p>Est-ce un tournesol ou un chou-fleur?</p>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-btn-wrapper">
+                <button class="btn" type="button" onclick="document.getElementById('fileInput').click()">Choisir un fichier</button>
+                <input type="file" name="file" id="fileInput" required style="display: none;" />
+            </div>
+            <br><br>
+            <button type="button" class="btn" onclick="uploadAndPredict()">Prédire</button>
+        </form>
+        <div id="result">Résultat de prédiction ici</div>
+        <div id="imagePreview"></div>
+    </div>
+
+    <script>
+        function uploadAndPredict() {
+            var formData = new FormData(document.getElementById('uploadForm'));
+            var imagePreview = document.getElementById('imagePreview');
+            var resultDiv = document.getElementById('result');
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultDiv.innerHTML = 'Résultat de la prédiction: <strong>' + data.classe_predite + '</strong> (Probabilité: ' + data.probability + ')';
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.innerHTML = '<img src="' + e.target.result + '" alt="Image Preview"/>';
+                };
+                reader.readAsDataURL(document.getElementById('fileInput').files[0]);
+            })
+            .catch(error => console.error('Erreur:', error));
+        }
+    </script>
+</body>
+</html>
